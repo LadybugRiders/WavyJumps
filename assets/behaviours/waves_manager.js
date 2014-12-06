@@ -1,6 +1,6 @@
 "use strict";
 //>>LREditor.Behaviour.name: WavesManager
-//>>LREditor.Behaviour.params : {}
+//>>LREditor.Behaviour.params : {"player": null}
 var WavesManager = function(_gameobject) {	
 	LR.Behaviour.call(this,_gameobject);
 };
@@ -9,61 +9,113 @@ WavesManager.prototype = Object.create(LR.Behaviour.prototype);
 WavesManager.prototype.constructor = WavesManager;
 
 WavesManager.prototype.create = function( _data ){
+    if (_data) {
+        if (_data.player) {
+            this.player = _data.player;
+            this.playerBehaviour = this.player.getBehaviour(Player);
+            if (this.playerBehaviour == null) {
+                console.warn("WavesManager: Behaviour Player not found");
+            }
+        } else {
+            console.warn("WavesManager: Player not found");
+        }
+    } else {
+        console.warn("WavesManager: No data");
+    }
+
     this.nbWavesAtStart = 1;
 
     this.graphics = this.go.game.add.graphics(0, 0);
 
     this.waves = new Array();
+    this.activeWaves = new Array();
     this.inactiveWaves = new Array();
+
+    this.timer = 0;
+    this.step = 5000; // 10s before adding a new wave
+
+    this.go.game.plugins.Pollinator = new Phaser.Plugin.Pollinator();
+
+    this.active = true;
+};
+
+WavesManager.prototype.start = function(){  
+    // add graphics to its z
+    this.go.entity.addChild(this.graphics);
 
     for (var i = 0; i < this.nbWavesAtStart; i++) {
         this.waves.push(new Wave(this));
     };
 
-    this.timer = 0;
-    this.step = 5000; // 10s before adding a new wave
-};
-
-WavesManager.prototype.start = function(){  
+    if (this.go.game.plugins.Pollinator) {
+        this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
+    }
 };
 
 WavesManager.prototype.update = function() {
+    if (this.active == true) {
+        var dt = this.go.game.time.elapsed;
 
-    var dt = this.go.game.time.elapsed;
+        this.graphics.clear();
+        this.activeWaves = new Array();
+        this.inactiveWaves = new Array();
 
-    this.graphics.clear();
-    this.inactiveWaves = new Array();
+        for (var i=0; i<this.waves.length; ++i) {
+            var wave = this.waves[i];
 
-    for (var i=0; i<this.waves.length; ++i) {
-        var wave = this.waves[i];
+            wave.update(dt);
 
-        wave.update(dt);
+            if (wave.active) {
+                this.activeWaves.push(wave);
+            } else {
+                this.inactiveWaves.push(wave);
+            }
+        }
 
-        if (!wave.active) {
-            this.inactiveWaves.push(wave);
+        // check collisions with the player if he is on ground
+        if (this.playerBehaviour != null) {
+            if (this.playerBehaviour.onGround == true) {
+                var i = 0;
+                var gameOver = false;
+                while (i<this.activeWaves.length && gameOver == false) {
+                    var wave = this.activeWaves[i];
+                    var collide = wave.collideWithEntity(this.player.entity);
+                    if (collide) {
+                        if (this.go.game.plugins.Pollinator) {
+                            this.go.game.plugins.Pollinator.dispatch("GameOver");
+                        }
+
+                        gameOver = true;
+                    }
+
+                    ++i;
+                }
+            }
+        }
+
+        // reset all inactive waves
+        for (var i=0; i<this.inactiveWaves.length; ++i) {
+            var wave = this.inactiveWaves[i];
+            wave.reset();
+        }
+
+        // add a wave if necessary
+        this.timer += dt;
+        if (this.timer >= this.step) {
+            this.waves.push(new Wave(this));
+
+            this.timer = 0;
+        }
+
+        // draw waves
+        for (var i=0; i<this.waves.length; ++i) {
+            this.waves[i].render(this.graphics);
         }
     }
+};
 
-    // check collisions with the player
-
-    // replace all inactive waves
-    for (var i=0; i<this.inactiveWaves.length; ++i) {
-        var wave = this.inactiveWaves[i];
-        wave.reset();
-    }
-
-    // add a wave if necessary
-    this.timer += dt;
-    if (this.timer >= this.step) {
-        this.waves.push(new Wave(this));
-
-        this.timer = 0;
-    }
-
-    // draw waves
-    for (var i=0; i<this.waves.length; ++i) {
-        this.waves[i].render(this.graphics);
-    }
+WavesManager.prototype.onGameOver = function() {
+    this.active = false;
 };
 
 //////////
@@ -86,12 +138,15 @@ var Wave = function(_manager) {
 
     this.speedMin = 0.05;
     this.speedMax = 0.10;
+
+    this.toPlayer = new Phaser.Point();
     
     this.reset();
 };
 
 Wave.prototype.reset = function() {
     var game = this.manager.go.game;
+
     var halfWidth = game.camera.width * 0.5;
     var halfHeight = game.camera.height * 0.5;
 
@@ -152,5 +207,27 @@ Wave.prototype.render = function(_graphics) {
     _graphics.drawCircle(this.x, this.y, this.radius);
 };
 
+Wave.prototype.collideWithEntity = function(_entity) {
+    var collide = false;
+
+    this.toPlayer.setTo(
+        _entity.x - this.x,
+        _entity.y - this.y
+        );
+
+    var radiusEntity = _entity.width * 0.5;
+    var halfLineWidth = this.lineWidth * 0.5;
+    var radiusMin = this.radius * 0.5 - halfLineWidth;
+    var radiusMax = this.radius * 0.5 + halfLineWidth;
+    var radiusSumMin = radiusMin - radiusEntity;
+    var radiusSumMax = radiusMax + radiusEntity;
+
+    var distanceToPlayer = this.toPlayer.getMagnitude();
+    if (distanceToPlayer < radiusSumMax && distanceToPlayer > radiusSumMin) {
+        collide = true;
+    }
+
+    return collide;
+};
 
 
