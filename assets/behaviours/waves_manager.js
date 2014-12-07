@@ -195,6 +195,36 @@ Wave.prototype.reset = function() {
         this.speed *= -1;
         this.color = 0x33a3c1;
     }
+    
+    // check if the circle isn't to close to the player, replace it otherwise
+    if (this.manager.player != null) {
+        var player = this.manager.player;
+        this.toPlayer.setTo(
+            player.x - this.x,
+            player.y - this.y
+            );
+
+        if (this.toPlayer.getMagnitude() < (this.radius * 0.5 + 100)) {
+            var offset = this.radius * 0.5 + 100;
+            this.toPlayer.setTo(
+                game.rnd.realInRange(0.1, 1),
+                game.rnd.realInRange(0.1, 1)
+                );
+            this.toPlayer.normalize();
+
+            var sign = game.rnd.realInRange(-1, 1);
+            if (game.rnd.realInRange(-1, 1) < 0) {
+                this.toPlayer.x *= -1;
+            }
+
+            if (game.rnd.realInRange(-1, 1) < 0) {
+                this.toPlayer.y *= -1;
+            }
+
+            this.x = player.x + this.toPlayer.x * offset;
+            this.y = player.y + this.toPlayer.y * offset;
+        }
+    }
 
     // set active
     this.active = true;
