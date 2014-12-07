@@ -80,7 +80,9 @@ WavesManager.prototype.update = function() {
             if (wave.active) {
                 this.activeWaves.push(wave);
             } else {
-                this.inactiveWaves.push(wave);
+                if (wave.needReset == true) {
+                    this.inactiveWaves.push(wave);
+                }
             }
         }
 
@@ -143,7 +145,7 @@ var Wave = function(_manager) {
     var game = this.manager.go.game;
     var halfWidth = game.camera.width * 0.5;
 
-    this.radiusMin = 10;
+    this.radiusMin = 30;
     this.radiusMax = halfWidth;
 
     this.lineWidthMin = 4;
@@ -154,6 +156,8 @@ var Wave = function(_manager) {
 
     this.speedMin = 0.05;
     this.speedMax = 0.10;
+
+    this.speedFading = 0.002;
 
     this.toPlayer = new Phaser.Point();
     
@@ -204,6 +208,7 @@ Wave.prototype.reset = function() {
             player.y - this.y
             );
 
+        // /!\ NEED TO REWORK FOR BLUE CIRCLES
         if (this.toPlayer.getMagnitude() < (this.radius * 0.5 + 100)) {
             var offset = this.radius * 0.5 + 100;
             this.toPlayer.setTo(
@@ -226,6 +231,9 @@ Wave.prototype.reset = function() {
         }
     }
 
+    // doesn't need to be reseted anymore
+    this.needReset = false;
+
     // set active
     this.active = true;
 }
@@ -241,6 +249,15 @@ Wave.prototype.update = function(_dt) {
             if (this.radius >= this.radiusMax) {
                 this.radius = this.radiusMax;
                 this.active = false;
+            }
+        }
+    } else {
+        if (this.needReset == false) {
+            this.alpha -= this.speedFading * _dt;
+
+            if (this.alpha <= 0) {
+                this.alpha = 0;
+                this.needReset = true;
             }
         }
     }
