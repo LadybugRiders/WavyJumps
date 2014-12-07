@@ -33,7 +33,6 @@ TextScore.prototype.reset = function(){
     this.bonusScore = 0;
 
     this.active = true;
-    console.log("REFRESH SCORE");
 };
 
 TextScore.prototype.update = function(){  
