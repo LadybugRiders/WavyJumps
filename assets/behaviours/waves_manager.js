@@ -29,7 +29,6 @@ WavesManager.prototype.create = function( _data ){
     } else {
         console.warn("WavesManager: No data");
     }
-
     
     // create the graphics area for wave rendering
     this.graphics = this.go.game.add.graphics(0, 0);
@@ -58,7 +57,8 @@ WavesManager.prototype.reset = function(){
         this.waves.push(new Wave(this));
     };
 
-    this.timer = 0;
+    this.timerScore = 0;
+    this.timerNewWave = 0;
     this.step = 5000; // number of ms before adding a new wave
 
     this.active = true;
@@ -67,6 +67,11 @@ WavesManager.prototype.reset = function(){
 WavesManager.prototype.update = function() {
     if (this.active == true) {
         var dt = this.go.game.time.elapsed;
+
+        this.timerScore += dt;
+        if (this.go.game.plugins.Pollinator) {
+            this.go.game.plugins.Pollinator.dispatch("UpdateTimerScore", {timer_score: this.timerScore});
+        }
 
         this.graphics.clear();
         this.activeWaves = new Array();
@@ -96,6 +101,11 @@ WavesManager.prototype.update = function() {
                     var collide = wave.collideWithEntity(this.player.entity);
                     if (collide) {
                         if (this.go.game.plugins.Pollinator) {
+                            // force positioning here because waves have to know the correct
+                            // player's position to reset
+                            /*this.player.x = 0;
+                            this.player.y = 0;*/
+                            // dispatch the GameOver
                             this.go.game.plugins.Pollinator.dispatch("GameOver");
                         }
 
@@ -114,11 +124,11 @@ WavesManager.prototype.update = function() {
         }
 
         // add a wave if necessary
-        this.timer += dt;
-        if (this.timer >= this.step) {
+        this.timerNewWave += dt;
+        if (this.timerNewWave >= this.step) {
             this.waves.push(new Wave(this));
 
-            this.timer = 0;
+            this.timerNewWave = 0;
         }
 
         // draw waves

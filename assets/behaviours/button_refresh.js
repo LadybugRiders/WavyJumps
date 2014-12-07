@@ -20,8 +20,10 @@ ButtonRefresh.prototype.onClick = function() {
 
 ButtonRefresh.prototype.onInputOver = function() {
     this.entity.angle = 180;
+    this.entity.alpha = 0.5;
 };
 
 ButtonRefresh.prototype.onInputOut = function() {
     this.entity.angle = 0;
+    this.entity.alpha = 1;
 };

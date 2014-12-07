@@ -29,6 +29,9 @@ Player.prototype.start = function(){
 };
 
 Player.prototype.reset = function(){  
+    this.x = 0;
+    this.y = 0;
+    
     this.speed = 0.25;
 
     this.entity.scale.setTo(this.scaleMin, this.scaleMin);
