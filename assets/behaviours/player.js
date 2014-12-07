@@ -17,6 +17,12 @@ Player.prototype.create = function( _data ){
     this.timeInAirMax = 400; // in ms
     this.timeInGroundMin = 50; // in ms
 
+    // start gamepad inputs
+    this.go.game.input.gamepad.start();
+
+    // To listen to buttons from a specific pad listen directly on that pad game.input.gamepad.padX, where X = pad 1-4
+    this.pad1 = this.go.game.input.gamepad.pad1;
+
     this.reset();
 };
 
@@ -58,8 +64,20 @@ Player.prototype.update = function() {
         if (this.onGround == true) {
             // if he is on ground long enough
             if (this.timeInGround > this.timeInGroundMin) {
-                // if the player want to jump
+                var jump = false;
+
+                if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
+                    if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_A)) {
+                        jump = true;
+                    }
+                }
+
                 if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+                    jump = true;
+                }
+
+                // if the player want to jump
+                if (jump) {
                     this.entity.scale.setTo(this.scaleMin, this.scaleMin);
                     this.timeInAir = 0;
                     this.onGround = false;
@@ -88,6 +106,24 @@ Player.prototype.update = function() {
                 this.entity.scale.setTo(newScale, newScale);
             }
         }
+    } else {
+        if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
+            if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_A)) {
+                this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
+            }
+        }
+        
+        if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+            this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
+        }
+    }
+
+    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
+        if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_START)) {
+            if (this.go.game.plugins.Pollinator) {
+                this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
+            }
+        }
     }
 };
 
@@ -96,19 +132,58 @@ Player.prototype.updatePosition = function(_dt) {
 
     this.direction.setTo(0, 0);
 
+    var left = false;
+    var right = false;
+    var up = false;
+    var down = false;
+
+    // check gamepad
+    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected)
+    {
+        if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_LEFT) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+            left = true;
+        } else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_RIGHT) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+            right = true;
+        }
+
+        if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_UP) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+            up = true;
+        }
+        else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+            down = true;
+        }
+    } 
+
+    // check keyboard
     if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
-        this.direction.x -= 1;
+        left = true;
     }
 
     if (game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
-        this.direction.x += 1;
+        right = true;
     }
 
     if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
-        this.direction.y -= 1;
+        up = true;
     }
 
     if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+        down = true;
+    }
+
+    if (left) {
+        this.direction.x -= 1;
+    }
+
+    if (right) {
+        this.direction.x += 1;
+    }
+
+    if (up) {
+        this.direction.y -= 1;
+    }
+
+    if (down) {
         this.direction.y += 1;
     }
 

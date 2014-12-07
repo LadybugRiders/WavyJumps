@@ -1,4 +1,9 @@
 body {
-  margin: 0;
+  margin: auto;
   padding: 0;
+}
+
+#phaser {
+    width: 960px;
+    margin-top: 10px;
 }
