@@ -1,0 +1,1 @@
+{"assets":{"images":[]},"objects":{"type":"LR.Entity.BitmapText","name":"fading_text","id":21,"x":-638,"y":0,"scaleX":1,"scaleY":1,"angle":0,"textData":{"text":"FadingText","fontSize":32,"font":"nexa"},"visible":true,"alpha":1,"tint":8750469,"behaviours":[{"name":"FadingText","params":{},"desc":null,"path":"/fading_text.js","$$hashKey":"099"}],"children":[]}}

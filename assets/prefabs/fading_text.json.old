@@ -1,0 +1,1 @@
+{"assets":{"images":[]},"objects":{"type":"LR.Entity.BitmapText","name":"fading_text","id":21,"x":0,"y":0,"scaleX":1,"scaleY":1,"angle":0,"textData":{"text":"New Text","fontSize":32,"font":"nexa"},"visible":true,"alpha":1,"tint":"0x858585","behaviours":[],"children":[]}}

@@ -33,6 +33,8 @@ WavesManager.prototype.create = function( _data ){
     // create the graphics area for wave rendering
     this.graphics = this.go.game.add.graphics(0, 0);
 
+    this.isFirstTimeInUpdate = true;
+
     // reset the stuff
     this.reset();
 };
@@ -57,7 +59,6 @@ WavesManager.prototype.reset = function(){
         this.waves.push(new Wave(this));
     };
 
-    this.timerScore = 0;
     this.timerNewWave = 0;
     this.step = 5000; // number of ms before adding a new wave
 
@@ -65,12 +66,19 @@ WavesManager.prototype.reset = function(){
 };
 
 WavesManager.prototype.update = function() {
+    if (this.isFirstTimeInUpdate == true) {
+        if (this.go.game.plugins.Pollinator) {
+            this.go.game.plugins.Pollinator.dispatch("ShowText", {text: "Move and Jump to catch Bonus", duration: 3500});
+        }
+
+        this.isFirstTimeInUpdate = false;
+    }
+
     if (this.active == true) {
         var dt = this.go.game.time.elapsed;
 
-        this.timerScore += dt;
         if (this.go.game.plugins.Pollinator) {
-            this.go.game.plugins.Pollinator.dispatch("UpdateTimerScore", {timer_score: this.timerScore});
+            this.go.game.plugins.Pollinator.dispatch("UpdateTimerScore", {timer_score: dt});
         }
 
         this.graphics.clear();
@@ -139,6 +147,9 @@ WavesManager.prototype.update = function() {
 };
 
 WavesManager.prototype.onGameOver = function() {
+    if (this.go.game.plugins.Pollinator) {
+        this.go.game.plugins.Pollinator.dispatch("ShowText", {text: "Game Over", duration: 2000});
+    }
     this.active = false;
 };
 
