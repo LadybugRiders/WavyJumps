@@ -17,3 +17,11 @@ ButtonRefresh.prototype.onClick = function() {
         this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
     }
 };
+
+ButtonRefresh.prototype.onInputOver = function() {
+    this.entity.angle = 180;
+};
+
+ButtonRefresh.prototype.onInputOut = function() {
+    this.entity.angle = 0;
+};
