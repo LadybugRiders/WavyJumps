@@ -31,7 +31,7 @@ Player.prototype.start = function(){
 Player.prototype.reset = function(){  
     this.x = 0;
     this.y = 0;
-    
+
     this.speed = 0.25;
 
     this.entity.scale.setTo(this.scaleMin, this.scaleMin);
@@ -39,6 +39,8 @@ Player.prototype.reset = function(){
     this.onGround = true;
     this.timeInAir = 0;
     this.timeInGround = 0;
+
+    this.entity.animations.play('play');
 
     this.active = true;
 };
@@ -130,6 +132,7 @@ Player.prototype.updatePosition = function(_dt) {
 };
 
 Player.prototype.onGameOver = function() {
+    this.entity.animations.play('idle');
     this.active = false;
 };
 

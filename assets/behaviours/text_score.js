@@ -17,6 +17,7 @@ TextScore.prototype.start = function(){
     // add listener to Pollinator
     if (this.go.game.plugins.Pollinator) {
         this.go.game.plugins.Pollinator.on("UpdateTimerScore", this.onUpdateTimerScore, this);
+        this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
         this.go.game.plugins.Pollinator.on("Refresh", this.onRefresh, this);
     }
 
@@ -30,27 +31,40 @@ TextScore.prototype.reset = function(){
 
     this.timerScore = 0;
     this.bonusScore = 0;
+
+    this.active = true;
+    console.log("REFRESH SCORE");
 };
 
 TextScore.prototype.update = function(){  
-    var score = "" + (Math.floor(this.timerScore * 0.01) + this.bonusScore);
-    var nbNumbers = score.length;
-    if (nbNumbers < 5) {
-        for (var i=0; i<(5 - nbNumbers); ++i) {
-            score = "0" + score;
+    if (this.active == true) {
+        var score = "" + (Math.floor(this.timerScore * 0.01) + this.bonusScore);
+        var nbNumbers = score.length;
+        if (nbNumbers < 5) {
+            for (var i=0; i<(5 - nbNumbers); ++i) {
+                score = "0" + score;
+            }
         }
+        this.entity.text = score;   
     }
-    this.entity.text = score;
 };
 
 TextScore.prototype.onUpdateTimerScore = function(_args) {
-    if (_args != null) {
+    if (this.active == true && _args != null) {
         if (_args.timer_score != null) {
             this.timerScore = _args.timer_score;
         }
     }
 };
 
-Player.prototype.onRefresh = function() {
+TextScore.prototype.onGameOver = function(_args) {
+    this.active = false;
+
+    if (this.go.game.plugins.Pollinator) {
+        this.go.game.plugins.Pollinator.dispatch("UpdateBestScore", {score: this.entity.text});
+    }
+};
+
+TextScore.prototype.onRefresh = function() {
     this.reset();
 };
