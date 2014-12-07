@@ -15,14 +15,16 @@ Player.prototype.create = function( _data ){
     this.scaleMax = 1;
 
     this.timeInAirMax = 300; // in ms
+
+    this.reset();
 };
 
 Player.prototype.start = function(){  
+    // add listener to Pollinator
     if (this.go.game.plugins.Pollinator) {
         this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
+        this.go.game.plugins.Pollinator.on("Refresh", this.onRefresh, this);
     }
-
-    this.reset();
 };
 
 Player.prototype.reset = function(){  
@@ -98,6 +100,10 @@ Player.prototype.update = function() {
 
 Player.prototype.onGameOver = function() {
     this.active = false;
+};
+
+Player.prototype.onRefresh = function() {
+    this.reset();
 };
 
 

@@ -9,6 +9,13 @@ WavesManager.prototype = Object.create(LR.Behaviour.prototype);
 WavesManager.prototype.constructor = WavesManager;
 
 WavesManager.prototype.create = function( _data ){
+    // create Pollinator (not great here but you know...)
+    this.go.game.plugins.Pollinator = new Phaser.Plugin.Pollinator();
+
+    // set nb waves at start
+    this.nbWavesAtStart = 1;
+
+    // get the player
     if (_data) {
         if (_data.player) {
             this.player = _data.player;
@@ -23,33 +30,38 @@ WavesManager.prototype.create = function( _data ){
         console.warn("WavesManager: No data");
     }
 
-    this.nbWavesAtStart = 1;
-
+    
+    // create the graphics area for wave rendering
     this.graphics = this.go.game.add.graphics(0, 0);
 
-    this.waves = new Array();
-    this.activeWaves = new Array();
-    this.inactiveWaves = new Array();
-
-    this.timer = 0;
-    this.step = 5000; // 10s before adding a new wave
-
-    this.go.game.plugins.Pollinator = new Phaser.Plugin.Pollinator();
-
-    this.active = true;
+    // reset the stuff
+    this.reset();
 };
 
 WavesManager.prototype.start = function(){  
     // add graphics to its z
     this.go.entity.addChild(this.graphics);
 
+    // add listener to Pollinator
+    if (this.go.game.plugins.Pollinator) {
+        this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
+        this.go.game.plugins.Pollinator.on("Refresh", this.onRefresh, this);
+    }
+};
+
+WavesManager.prototype.reset = function(){  
+    this.waves = new Array();
+    this.activeWaves = new Array();
+    this.inactiveWaves = new Array();
+
     for (var i = 0; i < this.nbWavesAtStart; i++) {
         this.waves.push(new Wave(this));
     };
 
-    if (this.go.game.plugins.Pollinator) {
-        this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
-    }
+    this.timer = 0;
+    this.step = 5000; // number of ms before adding a new wave
+
+    this.active = true;
 };
 
 WavesManager.prototype.update = function() {
@@ -116,6 +128,10 @@ WavesManager.prototype.update = function() {
 
 WavesManager.prototype.onGameOver = function() {
     this.active = false;
+};
+
+WavesManager.prototype.onRefresh = function() {
+    this.reset();
 };
 
 //////////
