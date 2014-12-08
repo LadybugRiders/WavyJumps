@@ -106,16 +106,6 @@ Player.prototype.update = function() {
                 this.entity.scale.setTo(newScale, newScale);
             }
         }
-    } else {
-        if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
-            if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_A)) {
-                this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
-            }
-        }
-        
-        if (this.go.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-            this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
-        }
     }
 
     if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
