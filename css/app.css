@@ -1,9 +1,20 @@
+@font-face {
+    font-family: nexa;
+    src: url(nexa.ttf);
+}
+
 body {
   margin: auto;
   padding: 0;
+
+  font-family: "nexa";
 }
 
-#phaser {
+.container {
     width: 960px;
     margin-top: 10px;
+}
+
+.input {
+    font-weight: bold;
 }

@@ -125,6 +125,10 @@ Player.prototype.update = function() {
             }
         }
     }
+
+    if (this.go.game.input.keyboard.isDown(Phaser.Keyboard.ENTER)) {
+        this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
+    }
 };
 
 Player.prototype.updatePosition = function(_dt) {
