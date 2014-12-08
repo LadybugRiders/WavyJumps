@@ -27,17 +27,28 @@ GroupTwitter.prototype.reset = function(){
     var cameraHeight = this.go.game.camera.height;
     this.x = cameraWidth * 2;
     this.y = cameraHeight * 2;
+
+    this.entity.alpha = 0;
+
+    this.active = false;
 };
 
 GroupTwitter.prototype.update = function() {
-};
 
-GroupTwitter.prototype.onGameOver = function() {
+    if (this.active == true) {
+        var dt = this.go.game.time.elapsed;
+
+        this.entity.alpha += this.speed * dt;
+        if (this.entity.alpha > 1) this.entity.alpha = 1;
+    }
+    
 };
 
 GroupTwitter.prototype.onGameOver = function() {
     this.x = 0;
     this.y = 0;
+
+    this.active = true;
 };
 
 GroupTwitter.prototype.onRefresh = function() {

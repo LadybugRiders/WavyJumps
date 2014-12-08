@@ -42,7 +42,7 @@ Player.prototype.reset = function(){
 
     this.entity.scale.setTo(this.scaleMin, this.scaleMin);
 
-    this.onGround = true;
+    this.onGround = false;
     this.timeInAir = 0;
     this.timeInGround = 0;
 
@@ -113,7 +113,7 @@ Player.prototype.update = function() {
             }
         }
         
-        if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+        if (this.go.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
             this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
         }
     }
@@ -148,8 +148,7 @@ Player.prototype.updatePosition = function(_dt) {
 
         if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_UP) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
             up = true;
-        }
-        else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+        } else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
             down = true;
         }
     } 
@@ -171,19 +170,19 @@ Player.prototype.updatePosition = function(_dt) {
         down = true;
     }
 
-    if (left) {
+    if (left == true) {
         this.direction.x -= 1;
     }
 
-    if (right) {
+    if (right == true) {
         this.direction.x += 1;
     }
 
-    if (up) {
+    if (up == true) {
         this.direction.y -= 1;
     }
 
-    if (down) {
+    if (down == true) {
         this.direction.y += 1;
     }
 

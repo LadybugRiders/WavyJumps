@@ -27,9 +27,44 @@ ButtonTweetScore.prototype.create = function(_data) {
     } else {
         console.warn("WavesManager: No data");
     }
+
+    this.speed = 0.01;
+
+    this.angleMin = -8;
+    this.angleMax = 8;
+};
+
+ButtonTweetScore.prototype.start = function(){  
+    // add listener to Pollinator
+    if (this.go.game.plugins.Pollinator) {
+        this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
+        this.go.game.plugins.Pollinator.on("Refresh", this.onRefresh, this);
+    }
+
+    this.reset();
+};
+
+ButtonTweetScore.prototype.reset = function(){  
+    this.angle = 0;
+
+    this.active = false;
 };
 
 ButtonTweetScore.prototype.update = function() {
+    var dt = this.go.game.time.elapsed;
+
+    if (this.active == true) {
+        this.entity.angle += this.speed * dt;
+        if (this.entity.angle < this.angleMin) {
+            this.entity.angle = this.angleMin;
+            this.speed *= -1;
+        }
+
+        if (this.entity.angle > this.angleMax) {
+            this.entity.angle = this.angleMax;
+            this.speed *= -1;
+        }
+    }
 }
 
 ButtonTweetScore.prototype.onClick = function() {
@@ -45,8 +80,8 @@ ButtonTweetScore.prototype.onClick = function() {
 
     var width  = 575,
         height = 400,
-        left   = (this.go.game.camera.width  - width) * 0.5,
-        top    = (this.go.game.camera.height - height) * 0.5,
+        left   = (window.innerWidth  - width) * 0.5,
+        top    = (window.innerHeight - height) * 0.5,
         url    = url,
         opts   = 'status=1' +
                  ',width='  + width  +
@@ -55,7 +90,25 @@ ButtonTweetScore.prototype.onClick = function() {
                  ',left='   + left;
     
     window.open(url, 'twitter', opts);
+};
 
-    console.log("OK");
+ButtonTweetScore.prototype.onInputOver = function() {
+    this.entity.alpha = 0.5;
+
+    this.inputOver = true;
+};
+
+ButtonTweetScore.prototype.onInputOut = function() {
+    this.entity.alpha = 1;
+
+    this.inputOver = false;
+};
+
+ButtonTweetScore.prototype.onGameOver = function() {
+    this.active = true;
+};
+
+ButtonTweetScore.prototype.onRefresh = function() {
+    this.reset();
 };
 
