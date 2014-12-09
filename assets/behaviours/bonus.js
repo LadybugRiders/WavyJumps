@@ -54,6 +54,8 @@ Bonus.prototype.update = function() {
                         this.go.game.plugins.Pollinator.dispatch("UpdateBonusScore", {bonus_score: this.bonusValue});
                         var text = "+" + this.bonusValue;
                         this.go.game.plugins.Pollinator.dispatch("ShowText", {text: text, duration: 1000});
+
+                        this.go.game.sound.play('sound_bonus', 0.2);
                     }
 
                     // reset
