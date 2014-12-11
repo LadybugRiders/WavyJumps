@@ -109,7 +109,7 @@ Player.prototype.update = function() {
     }
 
     if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
-        if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_START)) {
+        if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_START) || this.pad1.justPressed(Phaser.Gamepad.XBOX360_BACK)) {
             if (this.go.game.plugins.Pollinator) {
                 this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
             }
