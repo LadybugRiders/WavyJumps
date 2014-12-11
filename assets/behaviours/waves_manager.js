@@ -63,6 +63,9 @@ WavesManager.prototype.reset = function(){
     this.step = 5000; // number of ms before adding a new wave
 
     this.active = true;
+
+    // Push Game > Launch Event
+    _gaq.push(["_trackEvent", "Game", "Launch"]);
 };
 
 WavesManager.prototype.update = function() {
