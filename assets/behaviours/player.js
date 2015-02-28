@@ -1,6 +1,6 @@
 "use strict";
 //>>LREditor.Behaviour.name: Player
-//>>LREditor.Behaviour.params : {}
+//>>LREditor.Behaviour.params : {"player_id": 0}
 var Player = function(_gameobject) {  
     LR.Behaviour.call(this,_gameobject);
 };
@@ -8,7 +8,15 @@ var Player = function(_gameobject) {
 Player.prototype = Object.create(LR.Behaviour.prototype);
 Player.prototype.constructor = Player;
 
-Player.prototype.create = function( _data ){
+Player.prototype.create = function( _data ) {
+    this.playerId = 1;
+    // get the player's id
+    if (_data) {
+        if (_data.player_id) {
+            this.playerId = _data.player_id;
+        }
+    }
+
     this.direction = new Phaser.Point();
 
     this.scaleMin = 0.5;
@@ -21,12 +29,16 @@ Player.prototype.create = function( _data ){
     this.go.game.input.gamepad.start();
 
     // To listen to buttons from a specific pad listen directly on that pad game.input.gamepad.padX, where X = pad 1-4
-    this.pad1 = this.go.game.input.gamepad.pad1;
+    if (this.playerId == 2) {
+        this.pad = this.go.game.input.gamepad.pad2;
+    } else {
+        this.pad = this.go.game.input.gamepad.pad1;
+    }
 
     this.reset();
 };
 
-Player.prototype.start = function(){  
+Player.prototype.start = function() {  
     // add listener to Pollinator
     if (this.go.game.plugins.Pollinator) {
         this.go.game.plugins.Pollinator.on("GameOver", this.onGameOver, this);
@@ -34,8 +46,9 @@ Player.prototype.start = function(){
     }
 };
 
-Player.prototype.reset = function(){  
-    this.x = 0;
+Player.prototype.reset = function() {  
+    if (this.playerId <= 1) this.x = (10 + this.entity.width) * -1;
+    if (this.playerId == 2) this.x = (10 + this.entity.width);
     this.y = 0;
 
     this.speed = 0.25;
@@ -66,8 +79,8 @@ Player.prototype.update = function() {
             if (this.timeInGround > this.timeInGroundMin) {
                 var jump = false;
 
-                if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
-                    if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_A)) {
+                if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad.connected) {
+                    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_A)) {
                         jump = true;
                     }
                 }
@@ -108,8 +121,8 @@ Player.prototype.update = function() {
         }
     }
 
-    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected) {
-        if (this.pad1.justPressed(Phaser.Gamepad.XBOX360_START)) {
+    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad.connected) {
+        if (this.pad.justPressed(Phaser.Gamepad.XBOX360_START)) {
             if (this.go.game.plugins.Pollinator) {
                 this.go.game.plugins.Pollinator.dispatch("Refresh", this.onGameOver, this);
             }
@@ -132,17 +145,17 @@ Player.prototype.updatePosition = function(_dt) {
     var down = false;
 
     // check gamepad
-    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad1.connected)
+    if (this.go.game.input.gamepad.supported && this.go.game.input.gamepad.active && this.pad.connected)
     {
-        if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_LEFT) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+        if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_LEFT) || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
             left = true;
-        } else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_RIGHT) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+        } else if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_RIGHT) || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
             right = true;
         }
 
-        if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_UP) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+        if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_UP) || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
             up = true;
-        } else if (this.pad1.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || this.pad1.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+        } else if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN) || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
             down = true;
         }
     } 

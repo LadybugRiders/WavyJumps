@@ -9,13 +9,18 @@ BonusManager.prototype = Object.create(LR.Behaviour.prototype);
 BonusManager.prototype.constructor = BonusManager;
 
 BonusManager.prototype.create = function( _data ){
+    this.players = new Array();
+    this.playerBehaviours = new Array();
+
     // get the player
     if (_data) {
-        if (_data.player) {
-            this.player = _data.player;
-            this.playerBehaviour = this.player.getBehaviour(Player);
-            if (this.playerBehaviour == null) {
-                console.warn("BonusManager: Behaviour Player not found");
+        if (_data.players) {
+            // for each player, store player info
+            var nbChildren = _data.players.entity.children.length;
+            for (var i=0; i<nbChildren; ++i) {
+                this.players.push(_data.players.entity.children[i].gameobject);
+                var playerBehaviour = this.players[i].getBehaviour(Player);
+                this.playerBehaviours.push(playerBehaviour);
             }
         } else {
             console.warn("BonusManager: Player not found");
@@ -54,8 +59,8 @@ BonusManager.prototype.reset = function(){
 
             // reset Behavior Bonus
             behaviorBonus.reset();
-            behaviorBonus.player = this.player.entity;
-            behaviorBonus.playerBehaviour = this.playerBehaviour;
+            behaviorBonus.players = this.players;
+            behaviorBonus.playerBehaviours = this.playerBehaviours;
         }
     }
 

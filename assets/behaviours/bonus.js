@@ -12,8 +12,8 @@ Bonus.prototype.create = function( _data ){
     this.bonusValue = 500;
     this.toEntity = new Phaser.Point();
 
-    this.player = null;
-    this.playerBehaviour = null;
+    this.players = new Array();
+    this.playerBehaviours = new Array();
 };
 
 Bonus.prototype.start = function(){  
@@ -45,21 +45,26 @@ Bonus.prototype.reset = function(){
 
 Bonus.prototype.update = function() {
     if (this.active == true) {
-        // check collision with player
-        if (this.playerBehaviour != null) {
-            if (this.playerBehaviour.onGround == true) {
-                if (this.collideWithEntity(this.player) == true) {
-                    if (this.go.game.plugins.Pollinator) {
-                        // add bonus to score
-                        this.go.game.plugins.Pollinator.dispatch("UpdateBonusScore", {bonus_score: this.bonusValue});
-                        var text = "+" + this.bonusValue;
-                        this.go.game.plugins.Pollinator.dispatch("ShowText", {text: text, duration: 1000});
+        var nbPlayers = this.players.length;
+        for (var i=0; i<nbPlayers; ++i) {
+            var player = this.players[i];
+            var playerBehaviour = this.playerBehaviours[i];
+            // check collision with player
+            if (playerBehaviour != null) {
+                if (playerBehaviour.onGround == true) {
+                    if (this.collideWithEntity(player.entity) == true) {
+                        if (this.go.game.plugins.Pollinator) {
+                            // add bonus to score
+                            this.go.game.plugins.Pollinator.dispatch("UpdateBonusScore", {bonus_score: this.bonusValue});
+                            var text = "+" + this.bonusValue;
+                            this.go.game.plugins.Pollinator.dispatch("ShowText", {text: text, duration: 1000});
 
-                        this.go.game.sound.play('sound_bonus', 0.2);
+                            this.go.game.sound.play('sound_bonus', 0.2);
+                        }
+
+                        // reset
+                        this.reset();
                     }
-
-                    // reset
-                    this.reset();
                 }
             }
         }

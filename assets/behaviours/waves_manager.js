@@ -15,13 +15,18 @@ WavesManager.prototype.create = function( _data ){
     // set nb waves at start
     this.nbWavesAtStart = 1;
 
+    this.players = new Array();
+    this.playerBehaviours = new Array();
+
     // get the player
     if (_data) {
-        if (_data.player) {
-            this.player = _data.player;
-            this.playerBehaviour = this.player.getBehaviour(Player);
-            if (this.playerBehaviour == null) {
-                console.warn("WavesManager: Behaviour Player not found");
+        if (_data.players) {
+            // for each player, store player info
+            var nbChildren = _data.players.entity.children.length;
+            for (var i=0; i<nbChildren; ++i) {
+                this.players.push(_data.players.entity.children[i].gameobject);
+                var playerBehaviour = this.players[i].getBehaviour(Player);
+                this.playerBehaviours.push(playerBehaviour);
             }
         } else {
             console.warn("WavesManager: Player not found");
@@ -99,28 +104,33 @@ WavesManager.prototype.update = function() {
             }
         }
 
-        // check collisions with the player if he is on ground
-        if (this.playerBehaviour != null) {
-            if (this.playerBehaviour.onGround == true) {
-                var i = 0;
-                var gameOver = false;
-                while (i<this.activeWaves.length && gameOver == false) {
-                    var wave = this.activeWaves[i];
-                    var collide = wave.collideWithEntity(this.player.entity);
-                    if (collide) {
-                        if (this.go.game.plugins.Pollinator) {
-                            // force positioning here because waves have to know the correct
-                            // player's position to reset
-                            /*this.player.x = 0;
-                            this.player.y = 0;*/
-                            // dispatch the GameOver
-                            this.go.game.plugins.Pollinator.dispatch("GameOver");
+        var nbPlayers = this.players.length;
+        for (var j=0; j<nbPlayers; ++j) {
+            var player = this.players[j];
+            var playerBehaviour = this.playerBehaviours[j];
+            // check collisions with the player if he is on ground
+            if (playerBehaviour != null) {
+                if (playerBehaviour.onGround == true) {
+                    var i = 0;
+                    var gameOver = false;
+                    while (i<this.activeWaves.length && gameOver == false) {
+                        var wave = this.activeWaves[i];
+                        var collide = wave.collideWithEntity(player.entity);
+                        if (collide) {
+                            if (this.go.game.plugins.Pollinator) {
+                                // force positioning here because waves have to know the correct
+                                // player's position to reset
+                                /*this.player.x = 0;
+                                this.player.y = 0;*/
+                                // dispatch the GameOver
+                                this.go.game.plugins.Pollinator.dispatch("GameOver");
+                            }
+
+                            gameOver = true;
                         }
 
-                        gameOver = true;
+                        ++i;
                     }
-
-                    ++i;
                 }
             }
         }
@@ -221,34 +231,38 @@ Wave.prototype.reset = function() {
         this.color = 0x33a3c1;
     }
     
-    // check if the circle isn't to close to the player, replace it otherwise
-    if (this.manager.player != null) {
-        var player = this.manager.player;
-        this.toPlayer.setTo(
-            player.x - this.x,
-            player.y - this.y
-            );
+    var nbPlayers = this.manager.players.length;
+    for (var i=0; i<nbPlayers; ++i) {
+        var player = this.manager.players[i];
 
-        // /!\ NEED TO REWORK FOR BLUE CIRCLES
-        if (this.toPlayer.getMagnitude() < (this.radius * 0.5 + 100)) {
-            var offset = this.radius * 0.5 + 100;
+        // check if the circle isn't to close to the player, replace it otherwise
+        if (player != null) {
             this.toPlayer.setTo(
-                game.rnd.realInRange(0.1, 1),
-                game.rnd.realInRange(0.1, 1)
+                player.x - this.x,
+                player.y - this.y
                 );
-            this.toPlayer.normalize();
 
-            var sign = game.rnd.realInRange(-1, 1);
-            if (game.rnd.realInRange(-1, 1) < 0) {
-                this.toPlayer.x *= -1;
+            // /!\ NEED TO REWORK FOR BLUE CIRCLES
+            if (this.toPlayer.getMagnitude() < (this.radius * 0.5 + 100)) {
+                var offset = this.radius * 0.5 + 100;
+                this.toPlayer.setTo(
+                    game.rnd.realInRange(0.1, 1),
+                    game.rnd.realInRange(0.1, 1)
+                    );
+                this.toPlayer.normalize();
+
+                var sign = game.rnd.realInRange(-1, 1);
+                if (game.rnd.realInRange(-1, 1) < 0) {
+                    this.toPlayer.x *= -1;
+                }
+
+                if (game.rnd.realInRange(-1, 1) < 0) {
+                    this.toPlayer.y *= -1;
+                }
+
+                this.x = player.x + this.toPlayer.x * offset;
+                this.y = player.y + this.toPlayer.y * offset;
             }
-
-            if (game.rnd.realInRange(-1, 1) < 0) {
-                this.toPlayer.y *= -1;
-            }
-
-            this.x = player.x + this.toPlayer.x * offset;
-            this.y = player.y + this.toPlayer.y * offset;
         }
     }
 
